@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Mi Perfil</h1>
+
+    <div class="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
+        {% include '_messages.html' %} {# Para mostrar flash messages #}
+        <form method="POST" enctype="multipart/form-data" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="mb-6 flex flex-col items-center">
+                {# Mostrar la foto de perfil actual #}
+                <img src="{{ profile_image_url }}"
+                     alt="Foto de Perfil"
+                     class="w-32 h-32 rounded-full object-cover mb-4 border-2 border-gray-300"
+                     onerror="handleImageError(this)"> {# Reutilizamos la función de base.html #}
+                
+                {# Campo para subir nueva foto #}
+                <div class="w-full max-w-xs">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.foto.id }}">
+                        {{ form.foto.label }}
+                    </label>
+                    {{ form.foto(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline") }}
+                    {% for error in form.foto.errors %}
+                        <p class="text-red-500 text-xs italic">{{ error }}</p>
+                    {% endfor %}
+                    <p class="text-gray-600 text-xs mt-1">Sube una imagen (jpg, png, gif). Máximo 1MB.</p>
+                </div>
+            </div>
+
+            {# Campos de Nombres y Apellidos #}
+            {% if form.nombres %} {# Solo renderiza si el campo existe en el formulario #}
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.nombres.id }}">
+                    {{ form.nombres.label }}
+                </label>
+                {{ form.nombres(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline") }}
+                {% for error in form.nombres.errors %}
+                    <p class="text-red-500 text-xs italic">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.apellido_paterno.id }}">
+                    {{ form.apellido_paterno.label }}
+                </label>
+                {{ form.apellido_paterno(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline") }}
+                {% for error in form.apellido_paterno.errors %}
+                    <p class="text-red-500 text-xs italic">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.apellido_materno.id }}">
+                    {{ form.apellido_materno.label }}
+                </label>
+                {{ form.apellido_materno(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline") }}
+                {% for error in form.apellido_materno.errors %}
+                    <p class="text-red-500 text-xs italic">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="flex items-center justify-between">
+                {{ form.submit(class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

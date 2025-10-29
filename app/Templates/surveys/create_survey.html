@@ -1,0 +1,31 @@
+{# Heredamos de la plantilla base #}
+{% extends "base.html" %}
+{# Importamos las macros #}
+{% import "macros.html" as macros %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-semibold text-gray-800 mb-6">Crear Nueva Encuesta</h1>
+
+    {# Mostramos mensajes flash #}
+    {% include '_flashes.html' %}
+
+    <div class="bg-white p-6 rounded-lg shadow-md max-w-2xl mx-auto">
+        <form action="{{ url_for('surveys.create_survey') }}" method="post" novalidate>
+            {{ form.hidden_tag() }} {# CSRF #}
+
+            <div class="space-y-4">
+                {{ macros.render_field(form.titulo, label_visible=True, placeholder="Introduce un título claro y conciso") }}
+                {{ macros.render_field(form.descripcion, label_visible=True, rows=4, placeholder="Describe brevemente el propósito de la encuesta (opcional)") }}
+            </div>
+
+            <div class="mt-6 text-right">
+                {{ macros.render_submit_field(form.submit, class_override="bg-blue-600 hover:bg-blue-700 text-white") }}
+                 <a href="{{ url_for('surveys.list_surveys') }}" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

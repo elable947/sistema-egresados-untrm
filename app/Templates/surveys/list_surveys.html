@@ -1,0 +1,50 @@
+{# Heredamos de la plantilla base #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-semibold text-gray-800">Gestión de Encuestas</h1>
+        <a href="{{ url_for('surveys.create_survey') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+            + Crear Nueva Encuesta
+        </a>
+    </div>
+
+    {# Mostramos mensajes flash #}
+    {% include '_flashes.html' %}
+
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Encuestas Creadas</h2>
+
+        {% if encuestas %}
+            <ul class="space-y-4">
+                {% for encuesta in encuestas %}
+                    <li class="border rounded-md p-4 hover:shadow-lg transition duration-200 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">{{ encuesta.titulo }}</h3>
+                            <p class="text-sm text-gray-600">{{ encuesta.descripcion or 'Sin descripción' }}</p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Creada: {{ encuesta.fecha_creacion.strftime('%d/%m/%Y %H:%M') if encuesta.fecha_creacion else 'N/A' }}
+                                {% if encuesta.creador %} por {{ encuesta.creador.nombres }} {{ encuesta.creador.apellido_paterno }} {% endif %}
+                            </p>
+                        </div>
+                        <div class="flex space-x-3"> {# Contenedor para botones #}
+                            {# --- NUEVO BOTÓN: Enviar --- #}
+                            <a href="{{ url_for('surveys.send_survey_view', survey_id=encuesta.id) }}" class="text-sm bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded transition duration-200">
+                                Enviar
+                            </a>
+                            {# Botones de acción (futuro) #}
+                            <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800">Ver/Editar</a>
+                            <a href="#" class="text-sm text-red-600 hover:text-red-800">Eliminar</a>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-sm text-gray-500">Aún no se ha creado ninguna encuesta.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+

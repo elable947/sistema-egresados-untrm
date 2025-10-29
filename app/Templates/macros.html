@@ -1,0 +1,57 @@
+{# app/templates/macros.html - Macros útiles para renderizar formularios #}
+
+{# --- Macro para Campos de Formulario Genéricos (Texto, Email, Date, etc.) --- #}
+{# CORREGIDO: Se eliminó **kwargs de la definición #}
+{% macro render_field(field, label_visible=True) %}
+<div class="mb-4">
+  {# Etiqueta (opcionalmente visible) #}
+  {% if label_visible %}
+    {{ field.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+  {% endif %}
+
+  {# Input del campo - kwargs está disponible aquí implícitamente #}
+  {{ field(class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" + (" border-red-500" if field.errors else ""), **kwargs) }}
+
+  {# Mensajes de error #}
+  {% if field.errors %}
+    <ul class="mt-1 text-xs text-red-600 space-y-1">
+      {% for error in field.errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
+{% endmacro %}
+
+
+{# --- Macro Específica para Checkboxes (con estilo diferente) --- #}
+{# CORREGIDO: Se eliminó **kwargs de la definición #}
+{% macro render_checkbox_field(field) %}
+<div class="flex items-center mb-4">
+  {# kwargs está disponible aquí implícitamente #}
+  {{ field(class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded", **kwargs) }}
+  {{ field.label(class="ml-2 block text-sm text-gray-900") }}
+  {# Mensajes de error (menos común para checkboxes, pero posible) #}
+  {% if field.errors %}
+    <ul class="ml-2 mt-1 text-xs text-red-600 space-y-1">
+      {% for error in field.errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
+{% endmacro %}
+
+
+{# --- Macro Específica para Botones de Submit --- #}
+{# CORREGIDO: Se eliminó **kwargs de la definición #}
+{% macro render_submit_field(field, class_override="") %}
+  {# Usamos kwargs.pop para quitar 'name' si existe, evitando que se añada dos veces (ESTO YA NO ES NECESARIO PERO NO HACE DAÑO) #}
+  {% set _ = kwargs.pop('name', '') %}
+
+  {# CORREGIDO: Eliminamos 'name=field_name' de la llamada #}
+  {# Renderizamos el botón. Permitimos sobreescribir las clases por defecto #}
+  {# kwargs está disponible aquí implícitamente #}
+  {{ field(class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 " + class_override, **kwargs) }}
+{% endmacro %}
+
