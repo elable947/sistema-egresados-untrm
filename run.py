@@ -13,7 +13,7 @@ from config import Config
 # Creamos la instancia de la app pasándole la clase de configuración
 app = create_app(Config)
 
-# Esto permite ejecutar la app con "python run.py"
+# Esto permite ejecutar la app con "python run.py
 if __name__ == '__main__':
     app.run()
 
