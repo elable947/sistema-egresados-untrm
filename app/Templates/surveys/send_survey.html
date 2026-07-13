@@ -1,0 +1,108 @@
+{# Heredamos de la plantilla base #}
+{% extends "base.html" %}
+{# Importamos macros si son necesarias #}
+{% import "macros.html" as macros %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <a href="{{ url_for('surveys.list_surveys') }}" class="text-blue-600 hover:underline mb-4 inline-block">&larr; Volver a Encuestas</a>
+    <h1 class="text-3xl font-semibold text-gray-800 mb-2">Enviar Encuesta</h1>
+    <p class="text-lg text-gray-700 mb-6">"{{ encuesta.titulo }}"</p>
+
+    {# Mensajes Flash #}
+    {% include '_flashes.html' %}
+
+    {# --- Formulario de Filtros (GET) --- #}
+    <form method="GET" action="{{ url_for('surveys.send_survey_view', survey_id=encuesta.id) }}" class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">Filtrar Egresados</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {# Filtro Facultad #}
+            <div>
+                <label for="facultad" class="block text-sm font-medium text-gray-700">Facultad</label>
+                <select name="facultad" id="facultad" onchange="this.form.submit()" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <option value="">-- Todas --</option>
+                    {% for fac in facultades %}
+                        <option value="{{ fac.id }}" {% if fac.id == selected_facultad_id %}selected{% endif %}>{{ fac.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {# Filtro Carrera #}
+            <div>
+                <label for="carrera" class="block text-sm font-medium text-gray-700">Carrera</label>
+                <select name="carrera" id="carrera" onchange="this.form.submit()" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <option value="">-- Todas --</option>
+                    {% for car in carreras %}
+                        <option value="{{ car.id }}" {% if car.id == selected_carrera_id %}selected{% endif %}>{{ car.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {# Buscador por Nombre/Apellido #}
+            <div>
+                <label for="search" class="block text-sm font-medium text-gray-700">Buscar</label>
+                <div class="mt-1 flex rounded-md shadow-sm">
+                     <input type="text" name="search" id="search" value="{{ search_term or '' }}" placeholder="Nombre o Apellido..." class="focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-none rounded-l-md sm:text-sm border-gray-300 px-3 py-2">
+                     <button type="submit" class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 hover:bg-gray-100 text-sm">
+                         Buscar
+                     </button>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 text-right">
+             <a href="{{ url_for('surveys.send_survey_view', survey_id=encuesta.id) }}" class="text-sm text-gray-600 hover:underline">Limpiar Filtros</a>
+        </div>
+    </form>
+
+    {# --- Formulario de Selección y Envío (POST) --- #}
+    <form method="POST" action="{{ url_for('surveys.send_survey_view', survey_id=encuesta.id) }}">
+        {# Podríamos necesitar CSRF aquí si no está implícito #}
+        {# {{ csrf_token() }} #}
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                 <h2 class="text-xl font-semibold text-gray-700">Seleccionar Egresados</h2>
+                 <div>
+                      <button type="button" onclick="selectAllEgresados(true)" class="text-sm text-blue-600 hover:underline mr-3">Seleccionar Todos</button>
+                      <button type="button" onclick="selectAllEgresados(false)" class="text-sm text-gray-600 hover:underline">Deseleccionar Todos</button>
+                 </div>
+            </div>
+
+            {% if egresados %}
+                <div class="max-h-96 overflow-y-auto space-y-3 pr-2"> {# Altura máxima y scroll #}
+                    {% for egresado in egresados %}
+                        <label class="flex items-center p-3 border rounded-md hover:bg-gray-50 transition duration-150 cursor-pointer">
+                            <input type="checkbox" name="egresado_ids" value="{{ egresado.id }}" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 mr-3 egresado-checkbox">
+                            <img src="{{ egresado.profile_pic_url }}" alt="Foto" class="h-8 w-8 rounded-full object-cover mr-3" onerror="handleImageError(this)">
+                            <div>
+                                <span class="font-medium text-gray-800">{{ egresado.display_name }}</span>
+                                <span class="block text-xs text-gray-500">{{ egresado.carrera.nombre if egresado.carrera else 'N/A' }}</span>
+                            </div>
+                        </label>
+                    {% endfor %}
+                </div>
+                 <div class="mt-6 text-right">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                        Asignar Encuesta a Seleccionados
+                    </button>
+                </div>
+            {% else %}
+                <p class="text-sm text-gray-500 italic">No se encontraron egresados con los filtros aplicados.</p>
+            {% endif %}
+        </div>
+    </form>
+
+</div>
+
+{# Script para Seleccionar/Deseleccionar Todos #}
+<script>
+    function selectAllEgresados(checked) {
+        const checkboxes = document.querySelectorAll('.egresado-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = checked;
+        });
+    }
+</script>
+{% endblock %}
+
+{# Reutilizamos la función handleImageError de base.html #}
+{% block scripts %}
+    {{ super() }} {# Importante para incluir el script de base.html #}
+{% endblock %}

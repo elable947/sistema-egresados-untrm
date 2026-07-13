@@ -1,0 +1,109 @@
+{# Heredamos de la plantilla base #}
+{% extends "base.html" %}
+
+{# Importamos las macros #}
+{% import "macros.html" as macros %}
+
+{% block content %}
+{# ESTE DIV YA NO TIENE EL STYLE INLINE #}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+
+    {# Tarjeta principal #}
+    <div class="max-w-4xl w-full bg-white shadow-2xl rounded-lg overflow-hidden flex my-auto">
+
+        {# --- Columna Izquierda: Imagen --- #}
+        <div class="w-1/2 hidden md:block relative">
+            <img class="absolute h-full w-full object-cover"
+                 src="{{ url_for('static', filename='img/EGRESADO.jpg') }}"
+                 alt="Estudiantes Universitarios">
+            <div class="absolute inset-0 bg-black opacity-10"></div>
+            <div class="absolute top-8 left-8 text-white z-10">
+                <h1 class="text-3xl font-bold font-serif text-gray-100 opacity-75">Egresados</h1>
+            </div>
+        </div>
+
+        {# --- Columna Derecha: Formulario --- #}
+        <div class="w-full md:w-1/2 p-8 sm:p-12">
+            {# Logo Universidad #}
+            <div class="flex justify-center mb-6">
+                <img class="h-24 w-auto"
+                     src="{{ url_for('static', filename='img/logo.png') }}"
+                     alt="Logo Universidad">
+            </div>
+
+            <h2 class="mb-4 text-center text-2xl font-bold text-gray-900">¡Bienvenido!</h2>
+            <p class="mb-8 text-center text-sm text-gray-600">Sistema de Egresados</p>
+
+            <form action="{{ url_for('auth.login') }}" method="post" novalidate class="space-y-6">
+                {{ form.hidden_tag() }} {# CSRF #}
+
+                {# Campo Correo #}
+                <div>
+                    <label for="{{ form.email.id }}" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                    {{ form.email(class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm", placeholder="Ingrese su correo") }}
+                    {% if form.email.errors %}
+                        <ul class="text-red-600 text-xs mt-1">{% for error in form.email.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                    {% endif %}
+                </div>
+
+                {# Campo Contraseña #}
+                <div>
+                   <label for="{{ form.password.id }}" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                   <div class="relative">
+                        {{ form.password(class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm", placeholder="Ingrese contraseña", id="passwordField") }}
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 focus:outline-none">
+                            <svg id="eyeIconOpen" class="h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
+                            <svg id="eyeIconClosed" class="h-5 w-5 text-gray-500 hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 14a4 4 0 100-8 4 4 0 000 8zm0 1.5a5.5 5.5 0 100-11 5.5 5.5 0 000 11z" clip-rule="evenodd"/><path d="M1.38 10.083C2.89 6.207 6.13 4 10 4c3.87 0 7.11 2.207 8.62 6.083a1.11 1.11 0 010 .834C17.11 14.793 13.87 17 10 17c-3.87 0-7.11-2.207-8.62-6.083a1.11 1.11 0 010-.834zm1.889.378a16.31 16.31 0 0113.462 0l-.08.167a14.34 14.34 0 00-13.302 0l-.08-.167z"/></svg>
+                        </button>
+                   </div>
+                    {% if form.password.errors %}
+                        <ul class="text-red-600 text-xs mt-1">{% for error in form.password.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                    {% endif %}
+                </div>
+
+                {# Recordarme y Olvidaste #}
+                <div class="flex items-center justify-between mt-4">
+                    <div class="flex items-center">
+                        {{ macros.render_checkbox_field(form.remember_me, class_override="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded") }}
+                    </div>
+                    <div class="text-sm">
+                        <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">¿Olvidaste tu contraseña?</a>
+                    </div>
+                </div>
+
+                {# Botón Submit #}
+                <div class="mt-6">
+                    {{ macros.render_submit_field(form.submit, class_override="w-full bg-indigo-600 hover:bg-indigo-700 text-white") }}
+                </div>
+            </form>
+
+            {# Footer #}
+            <div class="mt-8 text-center text-sm text-gray-500">
+                <p class="font-bold">UNTRM</p>
+                <p>Perú</p>
+            </div>
+        </div>{# Fin Columna Derecha #}
+
+    </div>{# Fin Tarjeta #}
+</div>{# Fin Contenedor Principal #}
+
+{# JavaScript (sin cambios) #}
+<script>
+    function togglePasswordVisibility() {
+        const passwordField = document.getElementById('passwordField');
+        const eyeIconOpen = document.getElementById('eyeIconOpen'); // Ojo abierto
+        const eyeIconClosed = document.getElementById('eyeIconClosed'); // Ojo cerrado (tachado)
+
+        // Cambiar el tipo de input y alternar iconos
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            eyeIconOpen.classList.add('hidden'); // Oculta ojo abierto
+            eyeIconClosed.classList.remove('hidden'); // Muestra ojo cerrado
+        } else {
+            passwordField.type = 'password';
+            eyeIconOpen.classList.remove('hidden'); // Muestra ojo abierto
+            eyeIconClosed.classList.add('hidden'); // Oculta ojo cerrado
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,187 @@
+{# Heredamos de la plantilla base #}
+{% extends "base.html" %}
+{# Importamos las macros para renderizar formularios #}
+{% import "macros.html" as macros %}
+
+{# Definimos el bloque de contenido #}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    {# Título principal de la página de perfil #}
+    <h1 class="text-3xl font-semibold text-gray-800 mb-6">Mi Información</h1>
+
+    {# Mostramos mensajes flash (éxito, error) si existen #}
+    {% include '_flashes.html' %}
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        {# --- Columna Izquierda: Formularios de Edición --- #}
+        <div class="md:col-span-2 space-y-8">
+
+            {# --- Formulario 1: Editar Datos Personales y Privacidad --- #}
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Datos Personales y Privacidad</h2>
+                {# ¡IMPORTANTE! enctype para subida de archivos #}
+                <form action="{{ url_for('profile.view_profile') }}" method="post" novalidate enctype="multipart/form-data">
+                    {{ profile_form.hidden_tag() }} {# Campo CSRF Obligatorio #}
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {# Campos del formulario #}
+                        {{ macros.render_field(profile_form.telefono, label_visible=True, placeholder="Tu número de teléfono") }}
+                        {{ macros.render_field(profile_form.fecha_nacimiento, label_visible=True, type='date') }}
+                        {{ macros.render_field(profile_form.pais_residencia, label_visible=True, placeholder="País donde resides") }}
+                        {{ macros.render_field(profile_form.ciudad_residencia, label_visible=True, placeholder="Ciudad donde resides") }}
+                         <div class="sm:col-span-2">
+                             {{ macros.render_field(profile_form.direccion, label_visible=True, placeholder="Tu dirección actual") }}
+                         </div>
+
+                         {# --- CAMPO PARA FOTO --- #}
+                         <div class="sm:col-span-2 mt-4">
+                             {{ macros.render_field(profile_form.foto, label_visible=True, accept="image/*") }}
+                             <p class="text-xs text-gray-500 mt-1">Sube una imagen (jpg, png, gif). Máximo 1MB.</p>
+                         </div>
+                    </div>
+
+                    {# Opciones de Privacidad #}
+                    <fieldset class="mt-6 border-t pt-4">
+                        <legend class="text-lg font-medium text-gray-700 mb-2">Configuración de Networking</legend>
+                         <p class="text-sm text-gray-500 mb-3">Controla qué pueden ver otros egresados en el directorio.</p>
+                        <div class="space-y-2">
+                            {{ macros.render_checkbox_field(profile_form.perfil_publico) }}
+                            {{ macros.render_checkbox_field(profile_form.mostrar_email_publico) }}
+                        </div>
+                    </fieldset>
+
+                    {# Botón de submit #}
+                    <div class="mt-6 text-right">
+                         {{ macros.render_submit_field(profile_form.submit_profile, name='submit_profile', class_override="bg-blue-600 hover:bg-blue-700 text-white") }}
+                    </div>
+                </form>
+            </div>
+
+            {# --- Formulario 2: Añadir Experiencia Laboral --- #}
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Añadir Experiencia Laboral</h2>
+                <form action="{{ url_for('profile.add_work') }}" method="post" novalidate>
+                    {{ work_form.hidden_tag() }} {# Campo CSRF Obligatorio #}
+                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {{ macros.render_field(work_form.empresa, label_visible=True, placeholder="Nombre de la empresa") }}
+                        {{ macros.render_field(work_form.puesto, label_visible=True, placeholder="Tu cargo o puesto") }}
+                        {{ macros.render_field(work_form.pais, label_visible=True, placeholder="País donde trabajaste") }}
+                        {{ macros.render_field(work_form.sector, label_visible=True, placeholder="Ej: Tecnología, Educación, Salud") }}
+                        {{ macros.render_field(work_form.fecha_inicio, label_visible=True, type='date') }}
+                        {{ macros.render_field(work_form.fecha_fin, label_visible=True, type='date', label_text='Fecha Fin (Dejar en blanco si es actual)') }}
+                     </div>
+                    <div class="mt-6 text-right">
+                        {{ macros.render_submit_field(work_form.submit_work, name='submit_work', class_override="bg-green-600 hover:bg-green-700 text-white") }}
+                    </div>
+                     {% if work_form_errors is defined and work_form_errors is not none %}
+                        <div class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                            <p class="font-bold">Error al añadir experiencia:</p>
+                             <pre class="text-sm whitespace-pre-wrap">{{ work_form_errors }}</pre>
+                        </div>
+                    {% endif %}
+                </form>
+            </div>
+
+        </div>{# Fin Columna Izquierda #}
+
+        {# --- Columna Derecha: Resumen y Lista de Experiencias --- #}
+        <div class="md:col-span-1 space-y-8">
+
+            {# --- Resumen del Perfil (Solo Lectura) --- #}
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Resumen</h2>
+
+                {# --- MOSTRAR FOTO DE PERFIL --- #}
+                <div class="mb-4 flex justify-center">
+                    <img class="h-32 w-32 rounded-full object-cover border-2 border-gray-300" {# Añadido borde #}
+                         id="profilePic" {# Añadimos un ID para el JS #}
+                         src="{{ url_for('static', filename='uploads/profile_pics/' + (current_user.perfil_egresado.foto_perfil_filename if current_user.perfil_egresado and current_user.perfil_egresado.foto_perfil_filename else 'default.png')) }}"
+                         alt="Foto de Perfil"
+                         {# CORRECCIÓN: Llamamos a una función JS en onerror #}
+                         onerror="handleImageError(this)">
+                </div>
+
+                {# Datos del Resumen #}
+                {% if current_user and current_user.is_authenticated and current_user.perfil_egresado %}
+                    <dl class="space-y-2 text-sm text-gray-600">
+                        <div>
+                            <dt class="font-medium text-gray-900">Nombre Completo:</dt>
+                            <dd>{{ current_user.perfil_egresado.nombre1 }} {{ current_user.perfil_egresado.apellido_paterno }} {{ current_user.perfil_egresado.apellido_materno or '' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="font-medium text-gray-900">Correo Electrónico:</dt>
+                            <dd>{{ current_user.email }}</dd>
+                        </div>
+                         {% if current_user.perfil_egresado.carrera %}
+                         <div>
+                            <dt class="font-medium text-gray-900">Carrera:</dt>
+                            <dd>{{ current_user.perfil_egresado.carrera.nombre }}</dd>
+                         </div>
+                            {% if current_user.perfil_egresado.carrera.facultad %}
+                            <div>
+                                <dt class="font-medium text-gray-900">Facultad:</dt>
+                                <dd>{{ current_user.perfil_egresado.carrera.facultad.siglas or current_user.perfil_egresado.carrera.facultad.nombre }}</dd>
+                            </div>
+                            {% endif %}
+                         {% endif %}
+                         {% if current_user.perfil_egresado.telefono %}
+                         <div>
+                            <dt class="font-medium text-gray-900">Teléfono:</dt>
+                            <dd>{{ current_user.perfil_egresado.telefono }}</dd>
+                        </div>
+                         {% endif %}
+                         {% if current_user.perfil_egresado.pais_residencia %}
+                         <div>
+                            <dt class="font-medium text-gray-900">País de Residencia:</dt>
+                            <dd>{{ current_user.perfil_egresado.pais_residencia }}</dd>
+                        </div>
+                         {% endif %}
+                    </dl>
+                {% else %}
+                    <p class="text-sm text-red-500">Error: No se pudo cargar la información del perfil del egresado.</p>
+                {% endif %}
+            </div>
+
+             {# --- Lista de Experiencias Laborales --- #}
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Mi Historial Laboral</h2>
+                {% if experiencias is defined and experiencias %}
+                    <ul class="space-y-4">
+                        {% for exp in experiencias %}
+                            <li class="border-b pb-3 last:border-b-0">
+                                <p class="text-md font-semibold text-gray-800">{{ exp.puesto }}</p>
+                                <p class="text-sm text-blue-600">{{ exp.empresa }}</p>
+                                <p class="text-sm text-gray-500">{{ exp.pais if exp.pais else 'N/A' }} | {{ exp.sector if exp.sector else 'N/A' }}</p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    {{ exp.fecha_inicio.strftime('%b %Y') if exp.fecha_inicio else 'N/A' }} -
+                                    {% if exp.fecha_fin %}{{ exp.fecha_fin.strftime('%b %Y') }}{% else %}Actualidad{% endif %}
+                                </p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-sm text-gray-500">Aún no has añadido ninguna experiencia laboral.</p>
+                {% endif %}
+            </div>
+
+        </div> {# Fin Columna Derecha #}
+
+    </div> {# Fin Grid Principal #}
+</div>
+{% endblock %}
+
+{# Añadimos un bloque de scripts al final para la función JS #}
+{% block scripts %}
+    {{ super() }} {# Importante si base.html ya tiene un bloque scripts #}
+    <script>
+        // Función para manejar errores al cargar la imagen de perfil
+        function handleImageError(imageElement) {
+            // 1. Evita bucles infinitos si default.png también falla
+            imageElement.onerror = null;
+            // 2. Cambia la fuente a la imagen por defecto
+            imageElement.src = "{{ url_for('static', filename='img/default.png') }}";
+        }
+    </script>
+{% endblock %}
+

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title or 'Sistema de Egresados' }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { /* ... */ }
+    </script>
+    <style>
+        /* ... (Estilos CSS incluyendo .login-background, .sidebar, etc.) ... */
+        /* Estilos básicos */
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            font-family: sans-serif;
+            min-height: 100vh;
+        }
+
+        .login-background {
+            background-image: linear-gradient(rgba(49, 130, 206, 0.7), rgba(49, 130, 206, 0.7)),
+                url("{{ url_for('static', filename='img/FONDO_LOGIN.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+
+        .authenticated-background {
+            background-color: #f3f4f6;
+            /* bg-gray-100 */
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 16rem;
+            /* w-64 */
+            background-color: #1f2937;
+            /* bg-gray-800 */
+            color: #d1d5db;
+            /* text-gray-300 */
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100%;
+            z-index: 20;
+        }
+
+        .sidebar-header {
+            height: auto;
+            /* Ajustamos altura a auto */
+            padding-top: 1rem;
+            /* Añadimos padding */
+            padding-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            /* Cambiamos a columna */
+            align-items: center;
+            justify-content: center;
+            background-color: #111827;
+            /* bg-gray-900 */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            /* shadow-md */
+        }
+
+        .sidebar-profile-pic {
+            /* Estilo para la foto en la sidebar */
+            height: 4rem;
+            /* h-16 */
+            width: 4rem;
+            /* w-16 */
+            border-radius: 9999px;
+            /* rounded-full */
+            object-fit: cover;
+            /* object-cover */
+            margin-bottom: 0.5rem;
+            /* mb-2 */
+            border: 2px solid white;
+            /* Borde blanco */
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1.5rem 1rem;
+            overflow-y: auto;
+        }
+
+        .sidebar-nav a {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid #4b5563;
+        }
+
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            min-height: 100vh;
+            position: relative;
+            /* Añadido para posicionar flashes */
+        }
+
+        .content-wrapper.authenticated {
+            margin-left: 16rem;
+        }
+
+        .main-header {
+            background-color: white;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            /* shadow-md */
+            height: 4rem;
+            /* h-16 */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-left: 1.5rem;
+            /* px-6 */
+            padding-right: 1.5rem;
+            position: sticky;
+            /* Lo mantenemos pegajoso */
+            top: 0;
+            z-index: 10;
+        }
+
+        .main-content-area {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+            /* Aseguramos posicionamiento relativo aquí también */
+        }
+
+        .header-profile-pic {
+            /* Estilo para la foto en el header */
+            height: 2rem;
+            /* h-8 */
+            width: 2rem;
+            /* w-8 */
+            border-radius: 9999px;
+            /* rounded-full */
+            object-fit: cover;
+            /* object-cover */
+        }
+
+        /* Transición para ocultar flashes */
+        .flash-message {
+            transition: opacity 0.5s ease-out;
+        }
+
+        .flash-message.fade-out {
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body class="{% if current_user.is_authenticated %}authenticated-background{% else %}login-background{% endif %}">
+    <div class="main-container">
+        {# ... (Sidebar sin cambios) ... #}
+        {% if current_user.is_authenticated %}
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                {% set profile = current_user.active_profile %}
+                <img src="{{ profile.profile_pic_url if profile else url_for('static', filename='img/default.png') }}"
+                    alt="Foto de Perfil" class="sidebar-profile-pic" onerror="handleImageError(this)">
+                <span class="text-md font-semibold text-white mt-1">
+                    {{ profile.display_name if profile else current_user.email }}
+                </span>
+            </div>
+            <nav class="sidebar-nav">
+                {# ... (Enlaces de navegación sin cambios) ... #}
+                <a href="{{ url_for('main.index') }}"
+                    class="flex items-center px-4 py-2 rounded-md transition-colors duration-200 {% if request.endpoint.startswith('main.') %} bg-gray-700 text-white {% else %} text-gray-300 hover:bg-gray-700 hover:text-white {% endif %}"><svg
+                        class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                        </path>
+                    </svg> Inicio</a>
+                {% if current_user.tipo_usuario == 'egresado' %}<a href="{{ url_for('profile.view_profile') }}"
+                    class="flex items-center px-4 py-2 rounded-md transition-colors duration-200 {% if request.endpoint.startswith('profile.') %} bg-gray-700 text-white {% else %} text-gray-300 hover:bg-gray-700 hover:text-white {% endif %}"><svg
+                        class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg> Mi Información</a>{% endif %}
+                {% if current_user.tipo_usuario == 'personal_seguimiento' %}<a href="{{ url_for('surveys.list_surveys') }}"
+                    class="flex items-center px-4 py-2 rounded-md transition-colors duration-200 {% if request.endpoint.startswith('surveys.') %} bg-gray-700 text-white {% else %} text-gray-300 hover:bg-gray-700 hover:text-white {% endif %}"><svg
+                        class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+                        </path>
+                    </svg> Gestionar Encuestas</a>{% endif %}
+                {% if current_user.tipo_usuario == 'egresado' %}<a href="{{ url_for('surveys.my_surveys') }}"
+                    class="flex items-center px-4 py-2 rounded-md transition-colors duration-200 {% if request.endpoint == 'surveys.my_surveys' %} bg-gray-700 text-white {% else %} text-gray-300 hover:bg-gray-700 hover:text-white {% endif %}"><svg
+                        class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+                        </path>
+                    </svg> Mis Encuestas</a>{% endif %}
+                {% if current_user.tipo_usuario == 'egresado' %} <a href="#"
+                    class="flex items-center px-4 py-2 rounded-md text-gray-400 cursor-not-allowed"><svg
+                        class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                        </path>
+                    </svg> Networking <span class="text-xs ml-2">(Próx.)</span></a>{% endif %}
+                {% if current_user.tipo_usuario != 'egresado' %}<a href="{{ url_for('user_settings.my_profile') }}"
+                    class="flex items-center px-4 py-2 rounded-md transition-colors duration-200 {% if request.endpoint.startswith('user_settings.') %} bg-gray-700 text-white {% else %} text-gray-300 hover:bg-gray-700 hover:text-white {% endif %}"><svg
+                        class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg> Mi Perfil</a>{% endif %}
+            </nav>
+            <div class="sidebar-footer">
+                <a href="{{ url_for('auth.logout') }}"
+                    class="flex items-center px-4 py-2 rounded-md text-red-400 hover:bg-red-700 hover:text-white transition-colors duration-200"><svg
+                        class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                        </path>
+                    </svg> Cerrar Sesión</a>
+            </div>
+        </aside>
+        {% endif %}
+
+        <div class="content-wrapper {% if current_user.is_authenticated %}authenticated{% endif %}">
+            {% if current_user.is_authenticated %}
+            <header class="main-header">
+                <h1 class="text-xl font-semibold text-gray-700">{{ title or 'Sistema Egresados' }}</h1>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600 hidden sm:inline">{{ current_user.email }}</span>
+                    {% set profile = current_user.active_profile %}
+                    <img src="{{ profile.profile_pic_url if profile else url_for('static', filename='img/default.png') }}"
+                        alt="Avatar" class="header-profile-pic" onerror="handleImageError(this)">
+                </div>
+            </header>
+            {% endif %}
+
+            <main class="main-content-area relative"> {# Añadido relative #}
+                {# --- CAMBIO: Aseguramos que sea _flashes.html --- #}
+                {% include '_flashes.html' %}
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    {% block scripts %}
+    {# ... (Script handleImageError sin cambios) ... #}
+    {% if current_user.is_authenticated %}
+    <script>
+        const defaultPicEgresado = "{{ url_for('static', filename='img/default.png') }}";
+        const defaultPicStaff = "{{ url_for('static', filename='img/default_staff.png') }}";
+        const currentUserRole = "{{ current_user.tipo_usuario }}";
+
+        function handleImageError(imageElement) {
+            imageElement.onerror = null;
+            if (currentUserRole === 'egresado') {
+                imageElement.src = defaultPicEgresado;
+            } else {
+                imageElement.src = defaultPicStaff;
+            }
+        }
+    </script>
+    {% endif %}
+
+    {# --- SCRIPT Corregido para Ocultar Mensajes --- #}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const flashContainer = document.getElementById('flash-container');
+            if (flashContainer) {
+                const flashMessages = flashContainer.querySelectorAll('.flash-message');
+                flashMessages.forEach(message => {
+                    setTimeout(() => {
+                        message.classList.add('fade-out');
+                        message.addEventListener('transitionend', () => {
+                            message.remove();
+                        }, {
+                            once: true
+                        });
+                    }, 1000); // 3 segundos
+                });
+            }
+        });
+    </script>
+    {% endblock %}
+</body>
+
+</html>
